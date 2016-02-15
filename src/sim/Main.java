@@ -1,0 +1,28 @@
+package sim;
+
+/**
+ * Created by mike on 2/14/2016.
+ */
+public class Main {
+
+    public static Drawing mDrawing;
+    private static Controls mControls;
+    public static Simulation simulation;
+
+    public static void main(String[] args) {
+
+        simulation =  new Simulation(200,200);
+
+        //Schedule a job for the event-dispatching thread:
+        //creating and showing this application's GUI.
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // create the controls and drawing windows
+                mControls = new Controls();
+
+                // number of rows and columns in the Simulation grid
+                mDrawing = new Drawing(200, 200);
+            }
+        });
+    }
+}
