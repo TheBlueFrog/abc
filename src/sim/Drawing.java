@@ -41,6 +41,7 @@ public class Drawing extends JPanel {
         //Display the window, make large enough to hold grid
         mFrame.setSize(new Dimension(mCols * mCellWidth + 20, mRows * mCellHeight + 50));
 //	        frame.pack();
+        mFrame.setLocation(100, 100);
         mFrame.setVisible(true);
 
         // Listen for mouse clicks

@@ -1,63 +1,30 @@
 package sim;
 
+import javafx.util.Duration;
+
 import java.awt.*;
 import java.util.*;
 
 /**
  * Created by mike on 2/14/2016.
  */
-public class Sensor {
-
-    static private class Location {
-        private int mX;
-        private int mY;
-
-        public Location (int x, int y) {
-            mX = x;
-            mY = y;
-        }
-        public Location (Location l) {
-            mX = l.mX;
-            mY = l.mY;
-        }
-
-        public int getY() {
-            return mY;
-        }
-
-        public int getX() {
-            return mX;
-        }
-
-        private void move(double direction) {
-            double dx = Math.cos(direction);
-            double dy = Math.sin(direction);
-
-            mX = (int) Math.round((double) mX + dx);
-            mY = (int) Math.round((double) mY + dy);
-
-            if (isUnknown())
-                Main.simulation.discoverState(getX(), getY());
-
-        }
-        private boolean isUnknown() {
-            return Main.simulation.getState (getX(), getY()) == Cell.Unknown;
-        }
-
-    }
+public class Sensor extends Agent {
 
     private Location mLocation;
     private double direction;
 
     public Sensor (Simulation sim, int x, int y) {
+        super(sim.getFramework());
 
-        if (sim.getState(x, y) == Cell.SensorFull)
-            System.out.print("Can't start with sensor inside something");
+//        if (sim.getState(x, y) == Cell.SensorFull)
+//            System.out.print("Can't start with sensor inside something");
 
-        mLocation = new Location( x, y);
+        mLocation = new Location(x, y);
         this.direction = 0.0;
 
-        sim.discoverState(mLocation.getX(), mLocation.getY());
+        sim.discoverState(mLocation);
+
+        sim.getFramework().register(this);
     }
 
     public Color getColor(int x, int y) {
@@ -72,28 +39,32 @@ public class Sensor {
 
     private Random mRandom = new Random ();
 
-    public void move() {
-        Location n = new Location(mLocation);
-        n.move (direction);
+    public void move(Simulation simulation) {
+        Location n = simulation.move(mLocation, direction);
 
         // at least one direction has to work, where we came from
 
-        while (somethingThere(n)) { // never true first time
+        while (somethingThere(simulation, n)) { // never true first time
 
             // can't go here, change direction try that
             direction += (Math.PI / 4.0) * (mRandom.nextInt(8));
-            n = new Location(mLocation);
-            n.move(direction);
+            n = simulation.move(mLocation, direction);
         }
 
         mLocation = n;
     }
 
-    private boolean somethingThere(Location n) {
-        int s = Main.simulation.getState (n.getX(), n.getY());
-        if (s == Cell.Unknown)
-            return false; // don't know, assume nothing is there
-        return s == Cell.SensorFull;
+    private boolean somethingThere(Simulation simulation, Location n) {
+        Cell c = simulation.getDiscoveredCell (n.getX(), n.getY());
+        if (c == null)
+            return false;
+        return c.getState() == Cell.SensorFull;
+    }
+
+    @Override
+    protected void consume(Message msg) {
+        String s = (String) msg.mMessage;
+        move(Main.simulation);
     }
 
 }
