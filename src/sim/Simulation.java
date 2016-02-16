@@ -58,6 +58,9 @@ public class Simulation {
     }
 
 
+    public int getState(Location loc) {
+        return getState(loc.getX(), loc.getY());
+    }
     public int getState(int x, int y) {
         return mDiscovered[x][y].getState();
     }
@@ -95,11 +98,5 @@ public class Simulation {
         return mFramework;
     }
 
-    public Location move(Location src, double direction) {
-        Location dst = new Location(src);
-        dst.move (direction);
-        discoverState(dst.getX(), dst.getY());
-        return dst;
-    }
 
 }

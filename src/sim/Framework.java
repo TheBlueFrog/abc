@@ -40,4 +40,8 @@ public class Framework
 		
 		return v;
 	}
+
+	public void log(String tag, String s) {
+		System.out.println(String.format("%20s: %s", tag, s));
+	}
 }

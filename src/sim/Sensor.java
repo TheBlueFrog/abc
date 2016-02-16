@@ -1,7 +1,5 @@
 package sim;
 
-import javafx.util.Duration;
-
 import java.awt.*;
 import java.util.*;
 
@@ -10,8 +8,11 @@ import java.util.*;
  */
 public class Sensor extends Agent {
 
+    private static final String TAG = Sensor.class.getSimpleName();
+
     private Location mLocation;
-    private double direction;
+    private SensorHeading mHeading;
+    private SensorHitWall mHitWall;
 
     public Sensor (Simulation sim, int x, int y) {
         super(sim.getFramework());
@@ -20,11 +21,16 @@ public class Sensor extends Agent {
 //            System.out.print("Can't start with sensor inside something");
 
         mLocation = new Location(x, y);
-        this.direction = 0.0;
 
         sim.discoverState(mLocation);
 
         sim.getFramework().register(this);
+
+        mHitWall = new SensorHitWall(sim);
+        mHitWall.start ();
+
+        mHeading = new SensorHeading(sim.getFramework());
+        mHeading.start();
     }
 
     public Color getColor(int x, int y) {
@@ -39,19 +45,28 @@ public class Sensor extends Agent {
 
     private Random mRandom = new Random ();
 
+    private int mMovesSinceTurn = 0;
+
     public void move(Simulation simulation) {
-        Location n = simulation.move(mLocation, direction);
 
-        // at least one direction has to work, where we came from
+        Location dst = new Location(mLocation);
+        dst.move (mHeading.getHeading());
+        simulation.discoverState(dst);
 
-        while (somethingThere(simulation, n)) { // never true first time
-
-            // can't go here, change direction try that
-            direction += (Math.PI / 4.0) * (mRandom.nextInt(8));
-            n = simulation.move(mLocation, direction);
+        if (simulation.getState(dst) == Cell.SensorFull) {
+            // something there, don't move
+            send(new Message(this, mHitWall.getClass(), this));
         }
-
-        mLocation = n;
+        else {
+            // ok we can move there
+            if (mMovesSinceTurn > 20) {
+                send(new Message(this, this.getClass(), "bored"));
+            }
+            else {
+                mLocation = dst;
+                mMovesSinceTurn++;
+            }
+        }
     }
 
     private boolean somethingThere(Simulation simulation, Location n) {
@@ -64,7 +79,26 @@ public class Sensor extends Agent {
     @Override
     protected void consume(Message msg) {
         String s = (String) msg.mMessage;
-        move(Main.simulation);
+        if (s.equals("move"))
+            move(Main.simulation);
+        else if (s.equals("bored"))
+            pickRandomHeading();
+        else
+            mFramework.log(TAG, "Unknown message " + s);
     }
 
+    public double getHeading() {
+        return mHeading.getHeading();
+    }
+
+    public void setHeading(double h) {
+        this.mHeading.setHeading(h);
+        mMovesSinceTurn = 0;
+    }
+
+    public void pickRandomHeading() {
+        double dir = getHeading();
+        dir = (Math.PI / 4.0) * (1 + mRandom.nextInt(7));
+        setHeading(dir);
+    }
 }
