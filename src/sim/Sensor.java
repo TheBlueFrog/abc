@@ -37,10 +37,10 @@ public class Sensor extends Agent {
         return Color.pink;
     }
     public int getX() {
-        return mLocation.getX();
+        return (int) mLocation.getX();
     }
     public int getY() {
-        return mLocation.getY();
+        return (int) mLocation.getY();
     }
 
     private Random mRandom = new Random ();
@@ -70,7 +70,7 @@ public class Sensor extends Agent {
     }
 
     private boolean somethingThere(Simulation simulation, Location n) {
-        Cell c = simulation.getDiscoveredCell (n.getX(), n.getY());
+        Cell c = simulation.getDiscoveredCell ((int) n.getX(), (int) n.getY());
         if (c == null)
             return false;
         return c.getState() == Cell.SensorFull;

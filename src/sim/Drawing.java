@@ -79,18 +79,6 @@ public class Drawing extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        for (int x = 0; x < Main.simulation.maxcolumns; ++x) {
-            for (int y = 0; y < Main.simulation.maxrows; ++y) {
-
-                g2.setColor(Main.simulation.getColor(x, y));
-                g2.fillRect(mCellWidth * x, mCellHeight * y, mCellWidth, mCellHeight);
-            }
-        }
-
-        Sensor s = Main.simulation.getSensor ();
-        int x = s.getX();
-        int y = s.getY();
-        g2.setColor(s.getColor(x, y));
-        g2.fillRect(mCellWidth * x, mCellHeight * y, mCellWidth, mCellHeight);
+        Main.simulation.paint (g2);
     }
 }

@@ -5,10 +5,10 @@ package sim;
  */
 public class Location {
 
-    private int mX;
-    private int mY;
+    private double mX;
+    private double mY;
 
-    public Location (int x, int y) {
+    public Location (double x, double y) {
         mX = x;
         mY = y;
     }
@@ -17,11 +17,11 @@ public class Location {
         mY = l.mY;
     }
 
-    public int getY() {
+    public double getY() {
         return mY;
     }
 
-    public int getX() {
+    public double getX() {
         return mX;
     }
 
