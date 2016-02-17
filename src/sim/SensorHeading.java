@@ -3,28 +3,28 @@ package sim;
 /**
  * this agent owns the direction the sensor is moving
  */
-public class SensorHeading extends Agent
+public class SensorHeading extends TickableAgent
 {
 	private static final String TAG = SensorHeading.class.getSimpleName();
 
 	private static double mHeading = 0.0; // east
 
-	public SensorHeading(Framework f)
+	public SensorHeading(Simulation sim)
 	{
-		super(f);
+		super(sim, 0);
 	}
 
-	@Override
+    @Override
+    public void tick(Simulation sim, Sensor sensor) {
+
+    }
+
+    @Override
 	protected void consume(Message msg)
 	{
-		double d = (Double) msg.mMessage;
+        Sensor sensor = (Sensor) msg.mMessage;
 
-		mHeading += d;
-		
-		mFramework.log(TAG, String.format("Heading now %2.5f, %s changed it by %2.5f",
-                mHeading,
-				msg.mSender.getTag(),
-				d));
+		mFramework.log(TAG, String.format("Heading now %2.5f", mHeading));
 	}
 
     public double getHeading() {

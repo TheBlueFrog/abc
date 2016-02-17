@@ -7,20 +7,28 @@ import java.util.Random;
  *
  * notified when the sensor can't go where it's heading, do something
  */
-public class SensorHitWall extends Agent {
+public class SensorHitWall extends TickableAgent {
+
+    private static final String TAG = SensorHitWall.class.getSimpleName();
 
     private Random mRandom;
 
     public SensorHitWall(Simulation sim) {
-        super(sim.getFramework());
+        super(sim, 0);
 
         mRandom = new Random();
     }
 
     @Override
-    protected void consume(Message msg) {
-        Sensor sensor = (Sensor) msg.mMessage;
+    public void tick(Simulation sim, Sensor sensor) {
+        if (sim.getSensorState(sensor, sensor.getLocation()) == Sensor.isActive) {
+            //
+//            sensor.pickRandomHeading();
+        }
+    }
 
-        sensor.pickRandomHeading();
+    @Override
+    protected void consume(Message msg) {
+        mFramework.log(TAG, "Unknown message " + msg.mMessage);
     }
 }

@@ -20,7 +20,7 @@ public class Simulation {
     private Framework framework;
 
     void step() {
-        mFramework.send(new Message(null, mSensor.getClass(), "move"));
+        mFramework.send(new Message(null, mSensor.getClass(), "tick"));
     }
 
     public Simulation(double maxX, double maxY, double real2PixelX, double real2PixelY) {
@@ -95,8 +95,8 @@ public class Simulation {
     public void paint(Graphics2D g2) {
 
         // set background
-        g2.setColor(Color.white);
-        g2.fillRect(0, 0, (int) Math.round(maxX * mReal2PixelX), (int) Math.round(maxY * mReal2PixelY));
+//        g2.setColor(Color.white);
+//        g2.fillRect(0, 0, (int) Math.round(maxX * mReal2PixelX), (int) Math.round(maxY * mReal2PixelY));
 
         // render the static agents
         for (Displayable3DAgent a : mReality)
