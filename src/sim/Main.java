@@ -11,7 +11,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        simulation =  new Simulation(200,200);
+        simulation =  new Simulation(200.0, 200.0, 3.0, 3.0);
 
         //Schedule a job for the event-dispatching thread:
         //creating and showing this application's GUI.
@@ -25,4 +25,9 @@ public class Main {
             }
         });
     }
+
+    static public void log(String tag, String s) {
+        System.out.println(String.format("%20s: %s", tag, s));
+    }
+
 }

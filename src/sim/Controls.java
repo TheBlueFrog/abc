@@ -73,7 +73,7 @@ public class Controls extends JPanel implements ActionListener {
                         Main.simulation.step();
                         Main.mDrawing.mFrame.repaint();
                     }
-                    System.out.println("timer fired");
+//                    System.out.println("timer fired");
                 }
             };
             new Timer(delay, taskPerformer).start();

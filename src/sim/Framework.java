@@ -42,6 +42,6 @@ public class Framework
 	}
 
 	public void log(String tag, String s) {
-		System.out.println(String.format("%20s: %s", tag, s));
+        Main.log(tag, s);
 	}
 }

@@ -25,13 +25,9 @@ public class Location {
         return mX;
     }
 
-    public void move(double direction) {
-
-        double dx = Math.cos(direction);
-        double dy = Math.sin(direction);
-
-        mX = (int) Math.round((double) mX + dx);
-        mY = (int) Math.round((double) mY + dy);
+    public void move(double direction, double velocity) {
+        mX += Math.cos(direction) * velocity;
+        mY += Math.sin(direction) * velocity;
     }
 
 }

@@ -6,23 +6,20 @@ import java.util.*;
 /**
  * Created by mike on 2/14/2016.
  */
-public class Sensor extends Agent {
+public class Sensor extends Displayable3DAgent {
 
     private static final String TAG = Sensor.class.getSimpleName();
+
+    static public int notActive = 0;
+    static public int isActive = 1;
 
     private Location mLocation;
     private SensorHeading mHeading;
     private SensorHitWall mHitWall;
 
-    public Sensor (Simulation sim, int x, int y) {
-        super(sim.getFramework());
-
-//        if (sim.getState(x, y) == Cell.SensorFull)
-//            System.out.print("Can't start with sensor inside something");
-
-        mLocation = new Location(x, y);
-
-        sim.discoverState(mLocation);
+    public Sensor (Simulation sim, Location loc) {
+        super(sim);
+        mLocation = loc;
 
         sim.getFramework().register(this);
 
@@ -33,14 +30,13 @@ public class Sensor extends Agent {
         mHeading.start();
     }
 
-    public Color getColor(int x, int y) {
+    public Color getColor() {
         return Color.pink;
     }
-    public int getX() {
-        return (int) mLocation.getX();
-    }
-    public int getY() {
-        return (int) mLocation.getY();
+
+    public double getX() { return mLocation.getX(); }
+    public double getY() {
+        return mLocation.getY();
     }
 
     private Random mRandom = new Random ();
@@ -50,16 +46,15 @@ public class Sensor extends Agent {
     public void move(Simulation simulation) {
 
         Location dst = new Location(mLocation);
-        dst.move (mHeading.getHeading());
-        simulation.discoverState(dst);
+        dst.move (mHeading.getHeading(), 1.0);
 
-        if (simulation.getState(dst) == Cell.SensorFull) {
+        if (simulation.getSensorState(this, dst) == Sensor.isActive) {
             // something there, don't move
             send(new Message(this, mHitWall.getClass(), this));
         }
         else {
             // ok we can move there
-            if (mMovesSinceTurn > 20) {
+            if (mMovesSinceTurn > 40) {
                 send(new Message(this, this.getClass(), "bored"));
             }
             else {
@@ -67,13 +62,6 @@ public class Sensor extends Agent {
                 mMovesSinceTurn++;
             }
         }
-    }
-
-    private boolean somethingThere(Simulation simulation, Location n) {
-        Cell c = simulation.getDiscoveredCell ((int) n.getX(), (int) n.getY());
-        if (c == null)
-            return false;
-        return c.getState() == Cell.SensorFull;
     }
 
     @Override
@@ -94,11 +82,45 @@ public class Sensor extends Agent {
     public void setHeading(double h) {
         this.mHeading.setHeading(h);
         mMovesSinceTurn = 0;
+
+        mFramework.log(TAG, String.format("heading now %2.5f", h));
     }
 
+    private double tilt = 20.0;
+    private double heading = 0.0;
+
     public void pickRandomHeading() {
-        double dir = getHeading();
-        dir = (Math.PI / 4.0) * (1 + mRandom.nextInt(7));
+        double dir = (Math.PI / 180.0) * (1 + mRandom.nextInt(359));
+
+        ////////////////HACK
+/*        if (heading > 0.5) {
+            heading = 0.0;
+        }
+        else {
+            // going easterly, head west
+            heading = Math.PI;
+
+            tilt += (Math.PI / 180.0) * 10.0;
+        }
+
+        dir += heading + (Math.PI / 180.0) * tilt;
+*/
         setHeading(dir);
+    }
+
+    @Override
+    public void paint(Graphics2D g2, double real2PixelX, double real2PixelY) {
+        g2.setColor(getColor());
+        g2.fillRect(
+                (int) Math.round(getX() * real2PixelX),
+                (int) Math.round(getY() * real2PixelY),
+                (int) Math.round(real2PixelX),
+                (int) Math.round(real2PixelY));
+    }
+
+    @Override
+    public boolean isInside(Simulation sim, Location loc) {
+        // we're too small for anything to hit us...
+        return false;
     }
 }
