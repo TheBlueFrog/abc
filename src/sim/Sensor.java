@@ -1,5 +1,6 @@
 package sim;
 
+
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -15,6 +16,7 @@ public class Sensor extends Displayable3DAgent {
     static public int isActive = 1;
 
     private List<TickableAgent> mAgents = new ArrayList<>();
+    private List<Integer[]> mTrail = new ArrayList<>();
 
     public Sensor (Simulation sim, Location loc) {
         super(sim);
@@ -23,7 +25,7 @@ public class Sensor extends Displayable3DAgent {
         sim.getFramework().register(this);
 
 //        mAgents.add (new SensorHitWall(sim));
-        mAgents.add(new SpiralBehavior(this, 1.0));
+        mAgents.add(new SpiralBehavior(this, 1));
         mAgents.add(new RandomBehavior(this, 0.5));
 
         for (TickableAgent a : mAgents)
@@ -49,7 +51,7 @@ public class Sensor extends Displayable3DAgent {
         }
         else {
             // ok we can move there
-            updateLocation (dst);
+            setLocation(dst);
         }
 
 //        for (TickableAgent a : mAgents)
@@ -93,12 +95,21 @@ public class Sensor extends Displayable3DAgent {
 
     @Override
     public void paint(Graphics2D g2, double real2PixelX, double real2PixelY) {
+
+        Integer[] a = new Integer[2];
+        a[0] = (int) Math.round(getX() * real2PixelX);
+        a[1] = (int) Math.round(getY() * real2PixelY);
+        mTrail.add(a);
+        if (mTrail.size() > 30)
+            mTrail.remove(0);
+
         g2.setColor(getColor());
-        g2.fillRect(
-                (int) Math.round(getX() * real2PixelX),
-                (int) Math.round(getY() * real2PixelY),
-                (int) Math.round(real2PixelX),
-                (int) Math.round(real2PixelY));
+        for (Integer[] aa : mTrail)
+            g2.fillRect(
+                    aa[0],
+                    aa[1],
+                    (int) Math.round(real2PixelX),
+                    (int) Math.round(real2PixelY));
     }
 
 }

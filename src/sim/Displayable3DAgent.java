@@ -12,11 +12,6 @@ public abstract class Displayable3DAgent extends Agent {
     private static String TAG = "";
     protected final Simulation mSim;
 
-    protected void updateLocation(Location dst) {
-        mLocation = dst;
-        mMovesSinceTurn++;
-
-    }
 
     abstract public void paint(Graphics2D g2, double real2PixelX, double real2PixelY);
 
@@ -29,8 +24,6 @@ public abstract class Displayable3DAgent extends Agent {
     protected double mHeading = 0.0; // east
     protected double mVelocity = 1.0;
 
-    protected int mMovesSinceTurn = 0;
-
     public Displayable3DAgent(Simulation sim) {
         super(sim.getFramework());
         mSim = sim;
@@ -38,6 +31,9 @@ public abstract class Displayable3DAgent extends Agent {
 
     public Location getLocation() {
         return mLocation;
+    }
+    protected void setLocation(Location dst) {
+        mLocation = dst;
     }
 
     public double getX() { return mLocation.getX(); }
@@ -53,8 +49,6 @@ public abstract class Displayable3DAgent extends Agent {
     public void adjustHeading(TickableAgent agent, double h) {
 
         mHeading += h * agent.mActivationIntensity;
-
-        mMovesSinceTurn = 0;
 
         mFramework.log(TAG, String.format("adjustHeading: %s adjusted heading, now %2.5f", agent.getTag(), mHeading));
     }

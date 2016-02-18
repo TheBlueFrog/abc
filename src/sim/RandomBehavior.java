@@ -11,6 +11,9 @@ public class RandomBehavior extends TickableAgent {
 
     private final Displayable3DAgent mHost;
     private final Random mRandom;
+    private int mMovesSinceTurn = 0;
+
+    private double delta = Math.PI / 20.0;
 
     public RandomBehavior(Displayable3DAgent host, double activationIntensity) {
         super(host.getSim(), activationIntensity);
@@ -20,8 +23,9 @@ public class RandomBehavior extends TickableAgent {
 
     @Override
     public void tick(Simulation sim, Sensor sensor) {
-        if (mHost.mMovesSinceTurn > mRandom.nextInt(100)) {
-            sensor.adjustHeading(this, Math.PI / 8.0);
+        if (++mMovesSinceTurn > mRandom.nextInt(100)) {
+            sensor.adjustHeading(this, (mRandom.nextInt(3) - 2) * delta);
+            mMovesSinceTurn = 0;
         }
     }
 
