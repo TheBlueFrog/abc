@@ -3,7 +3,7 @@ package sim;
 /**
  * Created by mike on 2/16/2016.
  */
-public class SpiralBehavior extends TickableAgent {
+public class SpiralBehavior extends TickingAgent {
 
     static final private String TAG = SpiralBehavior.class.getSimpleName();
 
@@ -38,5 +38,10 @@ public class SpiralBehavior extends TickableAgent {
 
     @Override
     protected void consume(Message msg) {
+        if (msg instanceof MoveFailedMsg) {
+            mNumTicksToTurn = 6;
+            mMovesSinceTurn = 0;
+            mActivationIntensity -= 1.0;
+        }
     }
 }

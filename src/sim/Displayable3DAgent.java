@@ -32,8 +32,16 @@ public abstract class Displayable3DAgent extends Agent {
     public Location getLocation() {
         return mLocation;
     }
-    protected void setLocation(Location dst) {
+
+    protected void setLocation(Location dst) throws LocationInsideObjectException {
+        if (mSim.isInside3DObject(dst))
+            throw new LocationInsideObjectException (String.format("%s attempted to move inside an object", getTag()));
+
         mLocation = dst;
+    }
+
+    public double getVelocity() {
+        return mVelocity;
     }
 
     public double getX() { return mLocation.getX(); }
@@ -46,14 +54,25 @@ public abstract class Displayable3DAgent extends Agent {
      * @param agent
      * @param h amount to adjust heading by
      */
-    public void adjustHeading(TickableAgent agent, double h) {
+    public void adjustHeading(TickingAgent agent, double h) {
 
-        mHeading += h * agent.mActivationIntensity;
+        mHeading += h * normalize(agent.mActivationIntensity);
 
         mFramework.log(TAG, String.format("adjustHeading: %s adjusted heading, now %2.5f", agent.getTag(), mHeading));
+    }
+
+    /**
+     * put x in the range 0..1
+     * @param x
+     * @return
+     */
+    private double normalize(double x) {
+        return 1.0 / (1.0 + Math.exp(-x));
     }
 
     public Simulation getSim() {
         return mSim;
     }
+
+
 }

@@ -3,7 +3,7 @@ package sim;
 /**
  * this agent owns the direction the sensor is moving
  */
-public class SensorHeading extends TickableAgent
+public class SensorHeading extends TickingAgent
 {
 	private static final String TAG = SensorHeading.class.getSimpleName();
 

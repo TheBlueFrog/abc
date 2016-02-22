@@ -12,10 +12,7 @@ public class Sensor extends Displayable3DAgent {
 
     private static final String TAG = Sensor.class.getSimpleName();
 
-    static public int notActive = 0;
-    static public int isActive = 1;
-
-    private List<TickableAgent> mAgents = new ArrayList<>();
+    private List<TickingAgent> mAgents = new ArrayList<>();
     private List<Integer[]> mTrail = new ArrayList<>();
 
     public Sensor (Simulation sim, Location loc) {
@@ -26,9 +23,10 @@ public class Sensor extends Displayable3DAgent {
 
 //        mAgents.add (new SensorHitWall(sim));
         mAgents.add(new SpiralBehavior(this, 1));
-        mAgents.add(new RandomBehavior(this, 0.5));
+        mAgents.add(new RandomBehavior(this, -10));
+        mAgents.add(new WallFollowingBehavior(this, 0));
 
-        for (TickableAgent a : mAgents)
+        for (TickingAgent a : mAgents)
             a.start ();
     }
 
@@ -38,37 +36,51 @@ public class Sensor extends Displayable3DAgent {
 
     private Random mRandom = new Random ();
 
-    public void tick() {
+    /**
+     * iterate the object one time-tick
+     */
+    public void tick() throws LocationInsideObjectException {
 
-        for (TickableAgent a : mAgents)
+        for (TickingAgent a : mAgents)
             a.tick(mSim, this);
 
         Location dst = new Location(mLocation);
         dst.move (mHeading, mVelocity);
 
-        if (mSim.getSensorState(this, dst) == Sensor.isActive) {
+        if (mSim.isInside3DObject(dst)) {
             // something there, don't update location
+            for (TickingAgent a : mAgents)
+                send(new Message(this, a.getClass(), new MoveFailedMsg(this, dst)));
         }
         else {
             // ok we can move there
             setLocation(dst);
         }
 
-//        for (TickableAgent a : mAgents)
+//        for (TickingAgent a : mAgents)
 //            send(new Message(this, a.getClass(), this));
     }
 
+    /**
+     * consume inter-agent message
+     */
     @Override
     protected void consume(Message msg) {
-        String s = (String) msg.mMessage;
-        if (s.equals("tick"))
-            tick();
+        try {
+            String s = (String) msg.mMessage;
+            if (s.equals("tick"))
+                tick();
 //        else if (s.equals("moved-no-obstacle")) {
 //            if (mMovesSinceTurn > 40)
 //                pickRandomHeading();
 //        }
-        else
-            mFramework.log(TAG, "Unknown message " + s);
+            else
+                mFramework.log(TAG, "Unknown message " + s);
+        }
+        catch (Exception | LocationInsideObjectException e) {
+            mFramework.log(TAG,
+                    String.format("consume() caught %s exception %s", e.getClass().getSimpleName(), e.getMessage()));
+        }
     }
 
     private double tilt = 20.0;

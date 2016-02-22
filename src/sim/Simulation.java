@@ -106,13 +106,12 @@ public class Simulation {
         mSensor.paint(g2, mReal2PixelX, mReal2PixelY);
     }
 
-    public int getSensorState(Sensor sensor, Location loc) {
-        for (Displayable3DAgent a : mReality) {
+    public boolean isInside3DObject(Location loc) {
+        for (Displayable3DAgent a : mReality)
             if (a.isInside(this, loc))
-                return Sensor.isActive;
-        }
+                return true;
 
-        return Sensor.notActive;
+        return false;
     }
 
     public double getReal2PixelX() {

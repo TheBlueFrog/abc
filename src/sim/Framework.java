@@ -10,18 +10,9 @@ public class Framework
 
 	public void send(Message m)
 	{
-		if (m.mRecipient == null)
-			throw new IllegalStateException("Message has no recient");
-		
 		for (Agent a : getRecipients(m.mRecipient))
 			a.incoming(m);
 	}
-
-//	public void broadcast(Message message)
-//	{
-//		for (Agent a : agents)
-//			a.incoming(message);
-//	}
 
 	public void register(Agent agent)
 	{
@@ -34,7 +25,7 @@ public class Framework
 		
 		for (Agent a : agents)
 		{
-			if (class1.isAssignableFrom(a.getClass()))
+			if ((class1 == null) || (class1.isAssignableFrom(a.getClass())))
 				v.add(a);
 		}
 		

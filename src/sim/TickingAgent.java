@@ -3,9 +3,9 @@ package sim;
 /**
  * Created by mike on 2/16/2016.
  */
-public abstract class TickableAgent extends Agent {
+public abstract class TickingAgent extends Agent {
 
-    public TickableAgent(Simulation sim, double activationIntensity) {
+    public TickingAgent(Simulation sim, double activationIntensity) {
         super(sim.getFramework());
         mActivationIntensity = activationIntensity;
     }

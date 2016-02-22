@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * Created by mike on 2/16/2016.
  */
-public class RandomBehavior extends TickableAgent {
+public class RandomBehavior extends TickingAgent {
 
     static final private String TAG = RandomBehavior.class.getSimpleName();
 
@@ -31,6 +31,8 @@ public class RandomBehavior extends TickableAgent {
 
     @Override
     protected void consume(Message msg) {
-
+        if (msg instanceof MoveFailedMsg) {
+            mActivationIntensity += 1.0;
+        }
     }
 }

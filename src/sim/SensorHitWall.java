@@ -7,7 +7,7 @@ import java.util.Random;
  *
  * notified when the sensor can't go where it's heading, do something
  */
-public class SensorHitWall extends TickableAgent {
+public class SensorHitWall extends TickingAgent {
 
     private static final String TAG = SensorHitWall.class.getSimpleName();
 
@@ -21,7 +21,7 @@ public class SensorHitWall extends TickableAgent {
 
     @Override
     public void tick(Simulation sim, Sensor sensor) {
-        if (sim.getSensorState(sensor, sensor.getLocation()) == Sensor.isActive) {
+        if (sim.isInside3DObject(sensor.getLocation())) {
             //
 //            sensor.pickRandomHeading();
         }

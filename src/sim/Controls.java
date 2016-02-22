@@ -13,7 +13,7 @@ public class Controls extends JPanel implements ActionListener {
         protected JButton runButton, stepButton, pauseButton;
         private JFrame mFrame;
 
-        boolean running = false;
+        boolean running = true;
 
         public Controls() {
 
@@ -25,20 +25,20 @@ public class Controls extends JPanel implements ActionListener {
             // locales
             runButton.setMnemonic(KeyEvent.VK_D);
             runButton.setActionCommand("run");
-            runButton.setEnabled(true);
+            runButton.setEnabled( ! running);
 
             stepButton = new JButton("STEP");
             stepButton.setVerticalTextPosition(AbstractButton.BOTTOM);
             stepButton.setHorizontalTextPosition(AbstractButton.CENTER);
             stepButton.setMnemonic(KeyEvent.VK_M);
             stepButton.setActionCommand("step");
-            stepButton.setEnabled(true);
+            stepButton.setEnabled( ! running);
 
             pauseButton = new JButton("PAUSE");
             // Use the default text position of CENTER, TRAILING (RIGHT).
             pauseButton.setMnemonic(KeyEvent.VK_E);
             pauseButton.setActionCommand("pause");
-            pauseButton.setEnabled(false);
+            pauseButton.setEnabled(running);
 
             // Listen for actions on the buttons
             runButton.addActionListener(this);
