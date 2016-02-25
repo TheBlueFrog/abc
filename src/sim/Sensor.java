@@ -12,7 +12,6 @@ public class Sensor extends Displayable3DAgent {
 
     private static final String TAG = Sensor.class.getSimpleName();
 
-    private List<TickingAgent> mAgents = new ArrayList<>();
     private List<Integer[]> mTrail = new ArrayList<>();
 
     public Sensor (Simulation sim, Location loc) {
@@ -21,44 +20,32 @@ public class Sensor extends Displayable3DAgent {
 
         sim.getFramework().register(this);
 
-//        mAgents.add (new SensorHitWall(sim));
-        mAgents.add(new SpiralBehavior(this, 1));
-        mAgents.add(new RandomBehavior(this, -10));
-        mAgents.add(new WallFollowingBehavior(this, 0));
-
-        for (TickingAgent a : mAgents)
-            a.start ();
     }
 
     public Color getColor() {
-        return Color.pink;
+        return Color.MAGENTA;
     }
 
     private Random mRandom = new Random ();
+    private LidarData mLidar = null;
 
     /**
      * iterate the object one time-tick
      */
     public void tick() throws LocationInsideObjectException {
 
-        for (TickingAgent a : mAgents)
-            a.tick(mSim, this);
+        mLidar = new LidarData (this, mHeading);
 
-        Location dst = new Location(mLocation);
-        dst.move (mHeading, mVelocity);
-
-        if (mSim.isInside3DObject(dst)) {
-            // something there, don't update location
-            for (TickingAgent a : mAgents)
-                send(new Message(this, a.getClass(), new MoveFailedMsg(this, dst)));
-        }
-        else {
-            // ok we can move there
+        if (mLidar.mRange[0] > 10.0) {
+            mVelocity = Math.min(10.0, mVelocity * 1.04);
+            Location dst = new Location(mLocation);
+            dst.move(mHeading, mVelocity);
             setLocation(dst);
         }
-
-//        for (TickingAgent a : mAgents)
-//            send(new Message(this, a.getClass(), this));
+        else {
+            mVelocity = Math.min(10.0, mVelocity * 0.81);
+            mHeading += (Math.PI / 180.0) * 10;
+        }
     }
 
     /**
@@ -70,10 +57,6 @@ public class Sensor extends Displayable3DAgent {
             String s = (String) msg.mMessage;
             if (s.equals("tick"))
                 tick();
-//        else if (s.equals("moved-no-obstacle")) {
-//            if (mMovesSinceTurn > 40)
-//                pickRandomHeading();
-//        }
             else
                 mFramework.log(TAG, "Unknown message " + s);
         }
@@ -83,45 +66,73 @@ public class Sensor extends Displayable3DAgent {
         }
     }
 
-    private double tilt = 20.0;
-    private double heading = 0.0;
-
-//    public void pickRandomHeading() {
-//        double dir = (Math.PI / 180.0) * (1 + mRandom.nextInt(359));
-//
-//        ////////////////HACK
-///*        if (heading > 0.5) {
-//            heading = 0.0;
-//        }
-//        else {
-//            // going easterly, head west
-//            heading = Math.PI;
-//
-//            tilt += (Math.PI / 180.0) * 10.0;
-//        }
-//
-//        dir += heading + (Math.PI / 180.0) * tilt;
-//*/
-//        adjustHeading(this, dir);
-//    }
-
     @Override
     public void paint(Graphics2D g2, double real2PixelX, double real2PixelY) {
 
-        Integer[] a = new Integer[2];
-        a[0] = (int) Math.round(getX() * real2PixelX);
-        a[1] = (int) Math.round(getY() * real2PixelY);
-        mTrail.add(a);
-        if (mTrail.size() > 30)
-            mTrail.remove(0);
+        Integer[] loc = new Integer[2];
+        getPixelLocation (loc);
 
-        g2.setColor(getColor());
-        for (Integer[] aa : mTrail)
-            g2.fillRect(
-                    aa[0],
-                    aa[1],
-                    (int) Math.round(real2PixelX),
-                    (int) Math.round(real2PixelY));
+        showLidarData(g2, loc);
+
+        // leave a trail behind us
+        {
+            mTrail.add(loc);
+            if (mTrail.size() > 30)
+                mTrail.remove(0);
+
+            g2.setColor(getColor());
+            for (Integer[] aa : mTrail)
+                g2.fillRect(
+                        aa[0],
+                        aa[1],
+                        (int) Math.round(real2PixelX),
+                        (int) Math.round(real2PixelY));
+        }
+
+    }
+
+    /**
+     * draw the Lidar data as a bunch of wedges
+     * @param g2
+     * @param loc
+     */
+    private void showLidarData(Graphics2D g2, Integer[] loc) {
+        double rpd = Math.PI / 180.0;
+        int[] x = new int[3];
+        int[] y = new int[3];
+        x[0] = loc[0];
+        y[0] = loc[1];
+        x[1] = mSim.real2PixelX(getX() + (Math.cos((0 * rpd) + mHeading) * mLidar.mRange[0]));
+        y[1] = mSim.real2PixelX(getY() + (Math.sin((0 * rpd) + mHeading) * mLidar.mRange[0]));
+
+        g2.setColor(Color.pink);
+        for (int i = 1; i < mLidar.mRange.length; i = i + 10) {
+            x[2] = mSim.real2PixelX(getX() + (Math.cos((i * rpd) + mHeading) * mLidar.mRange[i]));
+            y[2] = mSim.real2PixelX(getY() + (Math.sin((i * rpd) + mHeading) * mLidar.mRange[i]));
+            g2.fillPolygon(x, y, 3);
+
+            x[1] = x[2];    // save computing it again
+            y[1] = y[2];
+        }
+
+        // close back to first point
+        x[2] = mSim.real2PixelX(getX() + (Math.cos((0 * rpd) + mHeading) * mLidar.mRange[0]));
+        y[2] = mSim.real2PixelX(getY() + (Math.sin((0 * rpd) + mHeading) * mLidar.mRange[0]));
+        g2.fillPolygon(x, y, 3);
+    }
+
+    /**
+     * return current location in pixels
+     * @param loc
+     */
+    private void getPixelLocation(Integer[] loc) {
+        loc[0] = mSim.real2PixelX(getX());
+        loc[1] = mSim.real2PixelY(getY());
+    }
+
+    @Override
+    public double distanceFrom(Location location, double direction) {
+        return Double.POSITIVE_INFINITY;
     }
 
 }

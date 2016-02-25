@@ -21,7 +21,7 @@ public abstract class Displayable3DAgent extends Agent {
     }
 
     protected Location mLocation;
-    protected double mHeading = 0.0; // east
+    protected double mHeading = 0.0;// 45.0 * (Math.PI / 180.0);
     protected double mVelocity = 1.0;
 
     public Displayable3DAgent(Simulation sim) {
@@ -40,29 +40,16 @@ public abstract class Displayable3DAgent extends Agent {
         mLocation = dst;
     }
 
+
+    public double getX() { return mLocation.getX(); }
+    public double getY() { return mLocation.getY(); }
+    public double getHeading() { return mHeading; }
     public double getVelocity() {
         return mVelocity;
     }
 
-    public double getX() { return mLocation.getX(); }
-    public double getY() { return mLocation.getY(); }
-
-    public double getHeading() { return mHeading; }
-
     /**
-     * adjust the heading of the agent
-     * @param agent
-     * @param h amount to adjust heading by
-     */
-    public void adjustHeading(TickingAgent agent, double h) {
-
-        mHeading += h * normalize(agent.mActivationIntensity);
-
-        mFramework.log(TAG, String.format("adjustHeading: %s adjusted heading, now %2.5f", agent.getTag(), mHeading));
-    }
-
-    /**
-     * put x in the range 0..1
+     * put x in the range 0..1, sigmoid
      * @param x
      * @return
      */
@@ -75,4 +62,13 @@ public abstract class Displayable3DAgent extends Agent {
     }
 
 
+    /**
+     * return the distance from a point, looking in a given direction
+     * to the ojbect.  if we don't intersect that line return infinity
+     *
+     * @param location
+     * @param direction
+     * @return
+     */
+    public abstract double distanceFrom(Location location, double direction);
 }

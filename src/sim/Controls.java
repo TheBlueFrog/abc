@@ -64,7 +64,7 @@ public class Controls extends JPanel implements ActionListener {
             mFrame.pack();
             mFrame.setVisible(true);
 
-            int delay = 50; // milliseconds
+            int delay = 100; // milliseconds
             ActionListener taskPerformer = new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
 

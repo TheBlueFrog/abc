@@ -14,20 +14,22 @@ import javax.swing.JPanel;
 //derived from Oracle's Java tutorials and StackOverflow
 
 public class Drawing extends JPanel {
-    private int mCellWidth = 3; 	// pixels per cell
-    private int mCellHeight = 3;
+    private int mPixelsPerCellX = 3; 	// pixels per cell
+    private int mPixelsPerCellY = 3;
 
     private int mRows;				// max rows and cols we should draw
     private int mCols;
 
     JFrame mFrame;
 
-    public Drawing (int rows, int cols) {
+    public Drawing (int rows, int cols, int pixPerCell) {
 
         super ();
 
         mRows = rows;
         mCols = cols;
+        mPixelsPerCellX = pixPerCell;
+        mPixelsPerCellY = pixPerCell;
 
         //Create and set up the drawing area
         mFrame = new JFrame("Drawing");
@@ -38,7 +40,7 @@ public class Drawing extends JPanel {
         mFrame.setContentPane(this);
 
         //Display the window, make large enough to hold grid
-        mFrame.setSize(new Dimension(mCols * mCellWidth + 20, mRows * mCellHeight + 50));
+        mFrame.setSize(new Dimension(mCols * mPixelsPerCellX + 20, mRows * mPixelsPerCellY + 50));
 //	        frame.pack();
         mFrame.setLocation(100, 100);
         mFrame.setVisible(true);
@@ -50,8 +52,8 @@ public class Drawing extends JPanel {
                 final Point pos = e.getPoint();
                 final int x = pos.x;
                 final int y = pos.y;
-                int row = y / mCellHeight;
-                int col = x / mCellWidth;
+                int row = y / mPixelsPerCellY;
+                int col = x / mPixelsPerCellX;
                 System.out.println(String.format("Click at %d, %d", row, col));
                 Main.simulation.onClick(row, col);
                 Main.mDrawing.mFrame.repaint();

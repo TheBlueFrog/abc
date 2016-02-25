@@ -21,7 +21,7 @@ public class Main {
                 mControls = new Controls();
 
                 // number of rows and columns in the Simulation grid
-                mDrawing = new Drawing(200, 200);
+                mDrawing = new Drawing(200, 200, 3);
             }
         });
     }

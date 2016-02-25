@@ -2,9 +2,7 @@ package sim;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by mike on 2/14/2016.
@@ -37,10 +35,12 @@ public class Simulation {
         // setup reality, all coords are in [0..maxX]
 
         // left, right, top, bottom
-        mReality.add(new Static3DRect (this,        0,        0,    2,        0,        0, maxY,    2, maxY));
-        mReality.add(new Static3DRect (this, maxX - 2,        0, maxX,        0, maxX - 2, maxY, maxX, maxY));
-        mReality.add(new Static3DRect (this,        0,        0, maxX,        0,        0,    2, maxX,    2));
-        mReality.add(new Static3DRect (this,        0, maxY - 2, maxX, maxY - 2,        0, maxY, maxX, maxY));
+        mReality.add(new Static3DWall(this,     0,    0,     0, maxY));
+        mReality.add(new Static3DWall(this,     0,    0,  maxX,    0));
+        mReality.add(new Static3DWall(this,  maxX,    0,  maxX, maxX));
+        mReality.add(new Static3DWall(this,     0, maxY,  maxX, maxY));
+
+//        mReality.add(new Static3DWall(this, maxX / 4, maxY / 4,  maxX / 2, maxY / 2));
 
 //        for (int x = 0; x < maxX; ++x) {
 //            mReality[x][0].setState(Cell.SensorFull);
@@ -54,7 +54,7 @@ public class Simulation {
         // setup what has been discovered
 //        mDiscovered[x][y] = new Cell(Cell.SensorEmpty);
 
-        mSensor = new Sensor (this, new Location(maxX / 2, maxY / 2));
+        mSensor = new Sensor (this, new Location(20, maxY / 3));
         mSensor.start();
     }
 
@@ -121,10 +121,28 @@ public class Simulation {
         return mReal2PixelY;
     }
 
-    public double real2PixelX (double x) {
-        return mReal2PixelX * x;
+    public int real2PixelX (double x) {
+        return (int) Math.round(mReal2PixelX * x);
     }
-    public double real2PixelY (double x) {
-        return mReal2PixelY * x;
+    public int real2PixelY (double x) {
+        return (int) Math.round(mReal2PixelY * x);
+    }
+
+    /**
+     * given a location and a direction find distance to nearest
+     * object
+     * @param location
+     * @param direction
+     * @param maxRange upper limit on returned range
+     */
+    public double distanceToObject(Location location, double direction, double maxRange) {
+        double range = maxRange;
+        for (Displayable3DAgent a : mReality) {
+            double d = a.distanceFrom(location, direction);
+            if (d < range)
+                range = d;
+        }
+
+        return range;
     }
 }
