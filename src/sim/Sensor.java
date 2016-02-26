@@ -14,40 +14,43 @@ public class Sensor extends Displayable3DAgent {
 
     private List<Integer[]> mTrail = new ArrayList<>();
 
+    private Random mRandom = new Random ();
+    private List<LidarData> mLidar = null;
+
     public Sensor (Simulation sim, Location loc) {
         super(sim);
         mLocation = loc;
 
         sim.getFramework().register(this);
 
+        mLidar = new ArrayList<>();
+        mLidar.add(new LidarData(this));
     }
 
     public Color getColor() {
         return Color.MAGENTA;
     }
 
-    private Random mRandom = new Random ();
-    private LidarData mLidar = null;
-
     /**
      * iterate the object one time-tick
      */
     public void tick() throws LocationInsideObjectException {
 
-        mLidar = new LidarData (this, mHeading);
-
-//        double d = mLidar.mRange[0] + mLidar.mRange[1] + mLidar.mRange[359] + mLidar.mRange[358] / 4;
-
-        if (mLidar.mRange[0] > 10.0) {
-            mVelocity = Math.min(10.0, mVelocity * 1.04);
-            Location dst = new Location(mLocation);
-            dst.move(mHeading, mVelocity);
-            setLocation(dst);
-        }
-        else {
-            mVelocity = Math.min(10.0, mVelocity * 0.81);
-            mHeading += (Math.PI / 180.0) * 10;
-        }
+        mSim.log(TAG, "Not implemented");
+//        mLidar = new LidarData (this, mHeading);
+//
+////        double d = mLidar.mRange[0] + mLidar.mRange[1] + mLidar.mRange[359] + mLidar.mRange[358] / 4;
+//
+//        if (mLidar.mRange[0] > 10.0) {
+//            mVelocity = Math.min(10.0, mVelocity * 1.04);
+//            Location dst = new Location(mLocation);
+//            dst.move(mHeading, mVelocity);
+//            setLocation(dst);
+//        }
+//        else {
+//            mVelocity = Math.min(10.0, mVelocity * 0.81);
+//            mHeading += (Math.PI / 180.0) * 10;
+//        }
     }
 
     /**
@@ -100,17 +103,18 @@ public class Sensor extends Displayable3DAgent {
      */
     private void showLidarData(Graphics2D g2, Integer[] loc) {
         double rpd = Math.PI / 180.0;
+        LidarData lidar = getCurScan();
         int[] x = new int[3];
         int[] y = new int[3];
         x[0] = loc[0];
         y[0] = loc[1];
-        x[1] = mSim.real2PixelX(getX() + (Math.cos((0 * rpd) + mHeading) * mLidar.mRange[0]));
-        y[1] = mSim.real2PixelX(getY() + (Math.sin((0 * rpd) + mHeading) * mLidar.mRange[0]));
+        x[1] = mSim.real2PixelX(getX() + (Math.cos((0 * rpd) + mHeading) * lidar.mRange[0]));
+        y[1] = mSim.real2PixelX(getY() + (Math.sin((0 * rpd) + mHeading) * lidar.mRange[0]));
 
         g2.setColor(Color.pink);
-        for (int i = 1; i < mLidar.mRange.length; i = i + 10) {
-            x[2] = mSim.real2PixelX(getX() + (Math.cos((i * rpd) + mHeading) * mLidar.mRange[i]));
-            y[2] = mSim.real2PixelX(getY() + (Math.sin((i * rpd) + mHeading) * mLidar.mRange[i]));
+        for (int i = 1; i < lidar.mRange.length; i = i + 1) {
+            x[2] = mSim.real2PixelX(getX() + (Math.cos((i * rpd) + mHeading) * lidar.mRange[i]));
+            y[2] = mSim.real2PixelX(getY() + (Math.sin((i * rpd) + mHeading) * lidar.mRange[i]));
             g2.fillPolygon(x, y, 3);
 
             x[1] = x[2];    // save computing it again
@@ -118,8 +122,8 @@ public class Sensor extends Displayable3DAgent {
         }
 
         // close back to first point
-        x[2] = mSim.real2PixelX(getX() + (Math.cos((0 * rpd) + mHeading) * mLidar.mRange[0]));
-        y[2] = mSim.real2PixelX(getY() + (Math.sin((0 * rpd) + mHeading) * mLidar.mRange[0]));
+        x[2] = mSim.real2PixelX(getX() + (Math.cos((0 * rpd) + mHeading) * lidar.mRange[0]));
+        y[2] = mSim.real2PixelX(getY() + (Math.sin((0 * rpd) + mHeading) * lidar.mRange[0]));
         g2.fillPolygon(x, y, 3);
     }
 
@@ -137,4 +141,12 @@ public class Sensor extends Displayable3DAgent {
         return Double.POSITIVE_INFINITY;
     }
 
+    public void scan(int x, int y) {
+        mLocation = new Location(x, y);
+        mLidar.add(new LidarData (this));
+    }
+
+    public LidarData getCurScan() {
+        return mLidar.get(mLidar.size() - 1);
+    }
 }

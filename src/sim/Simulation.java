@@ -19,7 +19,7 @@ public class Simulation {
     private Framework framework;
 
     void step() {
-        mFramework.send(new Message(null, mSensor.getClass(), "tick"));
+//        mFramework.send(new Message(null, mSensor.getClass(), "tick"));
     }
 
     public Simulation(double maxX, double maxY, double real2PixelX, double real2PixelY) {
@@ -80,6 +80,7 @@ public class Simulation {
 //    }
 
     public void onClick(int x, int y) {
+        mSensor.scan (x, y);
     }
 
     public Sensor getSensor() {
@@ -158,5 +159,9 @@ public class Simulation {
         }
 
         return range;
+    }
+
+    public void log(String tag, String s) {
+        mFramework.log(tag, s);
     }
 }

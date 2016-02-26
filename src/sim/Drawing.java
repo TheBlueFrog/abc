@@ -55,7 +55,7 @@ public class Drawing extends JPanel {
                 int row = y / mPixelsPerCellY;
                 int col = x / mPixelsPerCellX;
                 System.out.println(String.format("Click at %d, %d", row, col));
-                Main.simulation.onClick(row, col);
+                Main.simulation.onClick(col, row);
                 Main.mDrawing.mFrame.repaint();
             }
 
