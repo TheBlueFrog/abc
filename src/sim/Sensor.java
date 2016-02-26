@@ -36,6 +36,8 @@ public class Sensor extends Displayable3DAgent {
 
         mLidar = new LidarData (this, mHeading);
 
+//        double d = mLidar.mRange[0] + mLidar.mRange[1] + mLidar.mRange[359] + mLidar.mRange[358] / 4;
+
         if (mLidar.mRange[0] > 10.0) {
             mVelocity = Math.min(10.0, mVelocity * 1.04);
             Location dst = new Location(mLocation);

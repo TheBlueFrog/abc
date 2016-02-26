@@ -3,6 +3,7 @@ package sim;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by mike on 2/14/2016.
@@ -40,7 +41,13 @@ public class Simulation {
         mReality.add(new Static3DWall(this,  maxX,    0,  maxX, maxX));
         mReality.add(new Static3DWall(this,     0, maxY,  maxX, maxY));
 
-//        mReality.add(new Static3DWall(this, maxX / 4, maxY / 4,  maxX / 2, maxY / 2));
+        double x = maxX / 20;
+        double y = maxY / 20;
+        Random r = new Random();
+
+        for (int i = 0; i < 25; ++i)
+            addRect (x * (r.nextInt(17) - 3), y * (r.nextInt(17) - 3), r.nextInt(17) + 2, r.nextInt(17) + 2);
+
 
 //        for (int x = 0; x < maxX; ++x) {
 //            mReality[x][0].setState(Cell.SensorFull);
@@ -56,6 +63,13 @@ public class Simulation {
 
         mSensor = new Sensor (this, new Location(20, maxY / 3));
         mSensor.start();
+    }
+
+    private void addRect(double x, double y, double w, double h) {
+        mReality.add(new Static3DWall(this, x, y,  x + w, y));
+        mReality.add(new Static3DWall(this, x, y,  x, y + h));
+        mReality.add(new Static3DWall(this, x + w, y + h,  x + w, y));
+        mReality.add(new Static3DWall(this, x + w, y + h,  x, y + h));
     }
 
 //    public int getState(Location loc) {
