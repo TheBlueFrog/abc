@@ -3,16 +3,16 @@ package sim;
 /**
  * Created by mike on 2/15/2016.
  */
-public class Location {
+public class WorldLocation {
 
     private double mX;
     private double mY;
 
-    public Location (double x, double y) {
+    public WorldLocation(double x, double y) {
         mX = x;
         mY = y;
     }
-    public Location (Location l) {
+    public WorldLocation(WorldLocation l) {
         mX = l.mX;
         mY = l.mY;
     }
