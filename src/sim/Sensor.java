@@ -17,7 +17,7 @@ public class Sensor extends Displayable3DAgent {
     private Random mRandom = new Random ();
     private List<LidarData> mLidar = null;
 
-    public Sensor (Simulation sim, Location loc) {
+    public Sensor (Simulation sim, WorldLocation loc) {
         super(sim);
         mLocation = loc;
 
@@ -43,7 +43,7 @@ public class Sensor extends Displayable3DAgent {
 //
 //        if (mLidar.mRange[0] > 10.0) {
 //            mVelocity = Math.min(10.0, mVelocity * 1.04);
-//            Location dst = new Location(mLocation);
+//            WorldLocation dst = new WorldLocation(mLocation);
 //            dst.move(mHeading, mVelocity);
 //            setLocation(dst);
 //        }
@@ -77,7 +77,7 @@ public class Sensor extends Displayable3DAgent {
         Integer[] loc = new Integer[2];
         getPixelLocation (loc);
 
-        showLidarData(g2, loc);
+        showLidarData(g2, true);
 
         // leave a trail behind us
         {
@@ -96,35 +96,40 @@ public class Sensor extends Displayable3DAgent {
 
     }
 
+    private List<Integer> mHits = new ArrayList<>();
+
     /**
      * draw the Lidar data as a bunch of wedges
      * @param g2
-     * @param loc
+     * @param showScans
+     *
      */
-    private void showLidarData(Graphics2D g2, Integer[] loc) {
-        double rpd = Math.PI / 180.0;
-        LidarData lidar = getCurScan();
-        int[] x = new int[3];
-        int[] y = new int[3];
-        x[0] = loc[0];
-        y[0] = loc[1];
-        x[1] = mSim.real2PixelX(getX() + (Math.cos((0 * rpd) + mHeading) * lidar.mRange[0]));
-        y[1] = mSim.real2PixelX(getY() + (Math.sin((0 * rpd) + mHeading) * lidar.mRange[0]));
+    private void showLidarData(Graphics2D g2, boolean showScans) {
 
-        g2.setColor(Color.pink);
-        for (int i = 1; i < lidar.mRange.length; i = i + 1) {
-            x[2] = mSim.real2PixelX(getX() + (Math.cos((i * rpd) + mHeading) * lidar.mRange[i]));
-            y[2] = mSim.real2PixelX(getY() + (Math.sin((i * rpd) + mHeading) * lidar.mRange[i]));
-            g2.fillPolygon(x, y, 3);
+        if (showScans)
+            for (LidarData d : mLidar)
+                d.paint(g2, mSim);
 
-            x[1] = x[2];    // save computing it again
-            y[1] = y[2];
+
+//        int[] x = new int[3];
+//        int[] y = new int[3];
+//        x[0] = loc[0];
+//        y[0] = loc[1];
+//        x[1] = mSim.world2PixelX(getX() + (Math.cos((0 * rpd) + mHeading) * lidar.mRange[0]));
+//        y[1] = mSim.world2PixelX(getY() + (Math.sin((0 * rpd) + mHeading) * lidar.mRange[0]));
+//
+        g2.setColor(Color.BLUE);
+        for (int i = 0; i < mHits.size(); i += 2) {
+            g2.fillOval(mHits.get(i), mHits.get(i+1), 2, 2);
+//
+//            x[1] = x[2];    // save computing it again
+//            y[1] = y[2];
         }
-
-        // close back to first point
-        x[2] = mSim.real2PixelX(getX() + (Math.cos((0 * rpd) + mHeading) * lidar.mRange[0]));
-        y[2] = mSim.real2PixelX(getY() + (Math.sin((0 * rpd) + mHeading) * lidar.mRange[0]));
-        g2.fillPolygon(x, y, 3);
+//
+//        // close back to first point
+//        x[2] = mSim.world2PixelX(getX() + (Math.cos((0 * rpd) + mHeading) * lidar.mRange[0]));
+//        y[2] = mSim.world2PixelX(getY() + (Math.sin((0 * rpd) + mHeading) * lidar.mRange[0]));
+//        g2.fillPolygon(x, y, 3);
     }
 
     /**
@@ -132,21 +137,56 @@ public class Sensor extends Displayable3DAgent {
      * @param loc
      */
     private void getPixelLocation(Integer[] loc) {
-        loc[0] = mSim.real2PixelX(getX());
-        loc[1] = mSim.real2PixelY(getY());
+        loc[0] = mSim.world2PixelX(getX());
+        loc[1] = mSim.world2PixelY(getY());
     }
 
     @Override
-    public double distanceFrom(Location location, double direction) {
+    public double distanceFrom(WorldLocation location, double direction) {
         return Double.POSITIVE_INFINITY;
     }
 
-    public void scan(int x, int y) {
-        mLocation = new Location(x, y);
-        mLidar.add(new LidarData (this));
+    public void scan(WorldLocation loc) {
+        scan(loc.getX(), loc.getY());
+    }
+    public void scan(double x, double y) {
+        mLocation = new WorldLocation(x, y);
+        LidarData d = new LidarData(this);
+        mLidar.add(d);
+
+        double rpd = Math.PI / 180.0;
+        for (int i = 0; i < d.mRange.length; ++i) {
+            if (d.mRange[i] < d.getMaxRange()) {
+                double h = i * rpd;
+                double x1 = d.mLocation.getX() + (Math.cos(mHeading + h) * d.mRange[i]);
+                double y1 = d.mLocation.getY() + (Math.sin(mHeading + h) * d.mRange[i]);
+                mHits.add(mSim.world2PixelX(x1));
+                mHits.add(mSim.world2PixelY(y1));
+            }
+        }
     }
 
     public LidarData getCurScan() {
         return mLidar.get(mLidar.size() - 1);
     }
+
+    /**
+     * @param r
+     * @return number of scans that are in this rectangle
+     * note Rectangles are always screen coords not world
+     */
+    public int sample(Rectangle r) {
+        int count = 0;
+        // pick 10 random points in the rect
+        for (int i = 0; i < 10; ++i) {
+            Point pt = new Point(r.x + mRandom.nextInt(r.width), r.y + mRandom.nextInt(r.height));
+            for (LidarData s : mLidar) {
+                if (s.mShape.contains(pt))
+                    count++;
+            }
+        }
+        return count;
+    }
+
+
 }

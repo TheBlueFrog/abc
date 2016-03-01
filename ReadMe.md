@@ -3,6 +3,19 @@
 
 Given a set of Lidar scans assemble them into a single 3D picture
 
+Object edge is where a scan is short of the max
+Inferred edge is from a short scan to max
+Confirmed edge is an object edge from multiple scans
+
+Coalese objects into a single when edges are confirmed
+
+Why? who wants to understand objects?  
+
+* For navigation there is no need unless we want to start route planning
+* for obtaining contour maps it's not needed unless it's to remove the objects
+
+Foliage detecdtion/removal?
+
 If the data set is incomplete prompt for samples that will help
 make it complete
 
@@ -10,6 +23,11 @@ Assumptions:
 
 * Each scan is taken at a random location
 * Relative 3D path from each scan location to the next scan is known
+
+
+show each scan by drawing a line around the outer edge
+
+random sampling gets a uniform distribution of scans, duh
 
 
 

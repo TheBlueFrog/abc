@@ -2,28 +2,27 @@ package sim;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
-import java.awt.geom.Rectangle2D;
 
 /**
  * Created by mike on 2/16/16.
  */
 public class Static3DWall extends Displayable3DAgent {
 
-    private final Location mA;
-    private final Location mB;
+    private final WorldLocation mA;
+    private final WorldLocation mB;
     private Line2D mLine;
 
     public Static3DWall(Simulation sim, double x, double y, double x1, double y1) {
         super(sim);
 
-        mA = new Location(x, y);
-        mB = new Location(x1, y1);
+        mA = new WorldLocation(x, y);
+        mB = new WorldLocation(x1, y1);
     }
-    public Static3DWall(Simulation sim, Location a, Location b) {
+    public Static3DWall(Simulation sim, WorldLocation a, WorldLocation b) {
         super(sim);
 
-        mA = new Location(a);
-        mB = new Location(b);
+        mA = new WorldLocation(a);
+        mB = new WorldLocation(b);
     }
 
 
@@ -43,20 +42,20 @@ public class Static3DWall extends Displayable3DAgent {
     }
 
     @Override
-    public boolean isInside(Simulation sim, Location loc) {
+    public boolean isInside(Simulation sim, WorldLocation loc) {
         return false;
     }
 
     @Override
-    public double distanceFrom(Location loc, double direction) {
+    public double distanceFrom(WorldLocation loc, double direction) {
         Simulation sim = getSim();
-    //    Location pixLoc = new Location (sim.real2PixelX(loc.getX()), sim.real2PixelY(loc.getY()));
+    //    WorldLocation pixLoc = new WorldLocation (sim.world2PixelX(loc.getX()), sim.world2PixelY(loc.getY()));
 
         // get intersection of us and a line from the location in the given
         // direction, if any
-        Location z = getIntersection(mA, mB,
+        WorldLocation z = getIntersection(mA, mB,
                 loc,
-                new Location(loc.getX() + (Math.cos(direction) * 1000.0), loc.getY() + (Math.sin(direction) * 1000.0)));
+                new WorldLocation(loc.getX() + (Math.cos(direction) * 1000.0), loc.getY() + (Math.sin(direction) * 1000.0)));
 
         if (z != null) {
             // distance between loc and intersection
@@ -73,7 +72,7 @@ public class Static3DWall extends Displayable3DAgent {
         // don't do much, just sit here
     }
 
-    Location getIntersection(Location p0, Location p1, Location p2, Location p3)
+    WorldLocation getIntersection(WorldLocation p0, WorldLocation p1, WorldLocation p2, WorldLocation p3)
     {
         double s02_x, s02_y, s10_x, s10_y, s32_x, s32_y, s_numer, t_numer, denom, t;
         s10_x = p1.getX() - p0.getX();
@@ -102,7 +101,7 @@ public class Static3DWall extends Displayable3DAgent {
 
         t = t_numer / denom;
 
-        Location loc = new Location(p0.getX() + (t * s10_x), p0.getY() + (t * s10_y));
+        WorldLocation loc = new WorldLocation(p0.getX() + (t * s10_x), p0.getY() + (t * s10_y));
         return loc;
     }
 }

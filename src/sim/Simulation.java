@@ -1,9 +1,8 @@
 package sim;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Created by mike on 2/14/2016.
@@ -14,9 +13,11 @@ public class Simulation {
     private List<Displayable3DAgent> mReality = new ArrayList<>();
     double maxX;
     double maxY;
-    private final double mReal2PixelX;
-    private final double mReal2PixelY;
+    private final double mWorld2PixelX;
+    private final double mWorld2PixelY;
     private Framework framework;
+    private Random mRandom = new Random();
+
 
     void step() {
 //        mFramework.send(new Message(null, mSensor.getClass(), "tick"));
@@ -28,8 +29,8 @@ public class Simulation {
 
         this.maxX = maxX;
         this.maxY = maxY;
-        this.mReal2PixelX = real2PixelX;
-        this.mReal2PixelY = real2PixelY;
+        this.mWorld2PixelX = real2PixelX;
+        this.mWorld2PixelY = real2PixelY;
 
 //        mDiscovered = new Cell[maxX][maxY];
 
@@ -43,10 +44,10 @@ public class Simulation {
 
         double x = maxX / 20;
         double y = maxY / 20;
-        Random r = new Random();
 
-        for (int i = 0; i < 25; ++i)
-            addRect (x * (r.nextInt(17) - 3), y * (r.nextInt(17) - 3), r.nextInt(17) + 2, r.nextInt(17) + 2);
+        for (int i = 0; i < 45; ++i)
+            addRect (mRandom.nextDouble() * 20 * x, mRandom.nextDouble() * 20 * y,
+                    mRandom.nextDouble() * 20, mRandom.nextDouble() * 20);
 
 
 //        for (int x = 0; x < maxX; ++x) {
@@ -61,7 +62,7 @@ public class Simulation {
         // setup what has been discovered
 //        mDiscovered[x][y] = new Cell(Cell.SensorEmpty);
 
-        mSensor = new Sensor (this, new Location(20, maxY / 3));
+        mSensor = new Sensor (this, new WorldLocation(20, maxY / 3));
         mSensor.start();
     }
 
@@ -72,22 +73,73 @@ public class Simulation {
         mReality.add(new Static3DWall(this, x + w, y + h,  x, y + h));
     }
 
-//    public int getState(Location loc) {
+//    public int getState(WorldLocation loc) {
 //        return getState((int)loc.getX(), (int)loc.getY());
 //    }
 //    public int getState(int x, int y) {
 //        return mDiscovered[x][y].getState();
 //    }
 
-    public void onClick(int x, int y) {
-        mSensor.scan (x, y);
+    public void onClick(WorldLocation location) {
+//        mSensor.scan (x, y);
+
+        WorldLocation loc = calcMissingData ();
+        mSensor.scan(loc);
+    }
+
+    private WorldLocation calcMissingData() {
+
+        List<Rectangle> sparseness = sampleQuadrants(new Rectangle(0, 0, world2PixelX(maxX), world2PixelY(maxY)));
+
+        Rectangle r = sparseness.get(0); // most sparse
+
+        return new WorldLocation(
+                pixel2WorldX(r.x + mRandom.nextInt(r.width)),
+                pixel2WorldY(r.y + mRandom.nextInt(r.height)));
+    }
+
+    /**
+     * @param src
+     * @return ordered set of quadrants of the input rectangle, first is
+     * least sampled, last is most sampled
+     */
+    private List<Rectangle> sampleQuadrants(Rectangle src) {
+
+        // make quadrants
+        List<Rectangle> r = new ArrayList<>(4);
+        int w = src.width / 2;
+        int h = src.height / 2;
+        r.add(new Rectangle(0, 0, w, h));
+        r.add(new Rectangle(w, 0, w, h));
+        r.add(new Rectangle(0, h, w, h));
+        r.add(new Rectangle(w, h, w, h));
+
+        // sample each, put into sorted map
+        Map<Integer, List<Rectangle>> sr = new TreeMap<>();
+        for (Rectangle i : r) {
+            int c = sample(i);
+            if ( ! sr.containsKey(c))
+                sr.put(c, new ArrayList<Rectangle>());
+            sr.get(c).add(i);
+        }
+        // extract rectangles
+        List<Rectangle> a = new ArrayList<>();
+        for (Integer i : sr.keySet())
+            a.addAll(sr.get(i));
+
+        return a;
+    }
+
+    private Integer sample(Rectangle r) {
+        int count = mSensor.sample(r);
+        return count;
     }
 
     public Sensor getSensor() {
         return mSensor;
     }
 
-//    public void discoverState(Location loc) {
+//    public void discoverState(WorldLocation loc) {
 //        discoverState((int)loc.getX(), (int)loc.getY());
 //    }
 //    public void discoverState(int x, int y) {
@@ -111,17 +163,17 @@ public class Simulation {
 
         // set background
 //        g2.setColor(Color.white);
-//        g2.fillRect(0, 0, (int) Math.round(maxX * mReal2PixelX), (int) Math.round(maxY * mReal2PixelY));
+//        g2.fillRect(0, 0, (int) Math.round(maxX * mWorld2PixelX), (int) Math.round(maxY * mWorld2PixelY));
 
         // render the static agents
         for (Displayable3DAgent a : mReality)
-            a.paint(g2, mReal2PixelX, mReal2PixelY);
+            a.paint(g2, mWorld2PixelX, mWorld2PixelY);
 
         // render the sensor
-        mSensor.paint(g2, mReal2PixelX, mReal2PixelY);
+        mSensor.paint(g2, mWorld2PixelX, mWorld2PixelY);
     }
 
-    public boolean isInside3DObject(Location loc) {
+    public boolean isInside3DObject(WorldLocation loc) {
         for (Displayable3DAgent a : mReality)
             if (a.isInside(this, loc))
                 return true;
@@ -129,18 +181,24 @@ public class Simulation {
         return false;
     }
 
-    public double getReal2PixelX() {
-        return mReal2PixelX;
+    public double getWorld2PixelX() {
+        return mWorld2PixelX;
     }
-    public double getReal2PixelY() {
-        return mReal2PixelY;
+    public double getWorld2PixelY() {
+        return mWorld2PixelY;
     }
 
-    public int real2PixelX (double x) {
-        return (int) Math.round(mReal2PixelX * x);
+    public int world2PixelX(double x) {
+        return (int) Math.round(mWorld2PixelX * x);
     }
-    public int real2PixelY (double x) {
-        return (int) Math.round(mReal2PixelY * x);
+    public int world2PixelY(double x) {
+        return (int) Math.round(mWorld2PixelY * x);
+    }
+    public double pixel2WorldX(int x) {
+        return x / mWorld2PixelX;
+    }
+    public double pixel2WorldY(double x) {
+        return x / mWorld2PixelY;
     }
 
     /**
@@ -150,7 +208,7 @@ public class Simulation {
      * @param direction
      * @param maxRange upper limit on returned range
      */
-    public double distanceToObject(Location location, double direction, double maxRange) {
+    public double distanceToObject(WorldLocation location, double direction, double maxRange) {
         double range = maxRange;
         for (Displayable3DAgent a : mReality) {
             double d = a.distanceFrom(location, direction);

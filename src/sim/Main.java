@@ -9,9 +9,12 @@ public class Main {
     private static Controls mControls;
     public static Simulation simulation;
 
+    static private final double worldMax = 1000.0;
+    static private final double world2Pixel = 0.5;
+
     public static void main(String[] args) {
 
-        simulation =  new Simulation(200.0, 200.0, 3.0, 3.0);
+        simulation =  new Simulation(worldMax, worldMax, world2Pixel, world2Pixel);
 
         //Schedule a job for the event-dispatching thread:
         //creating and showing this application's GUI.
@@ -21,7 +24,10 @@ public class Main {
                 mControls = new Controls();
 
                 // number of rows and columns in the Simulation grid
-                mDrawing = new Drawing(200, 200, 3);
+                mDrawing = new Drawing(
+                        (int) Math.round(worldMax * world2Pixel),
+                        (int) Math.round(worldMax * world2Pixel),
+                        1.0 / world2Pixel);
             }
         });
     }

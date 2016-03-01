@@ -15,12 +15,12 @@ public abstract class Displayable3DAgent extends Agent {
 
     abstract public void paint(Graphics2D g2, double real2PixelX, double real2PixelY);
 
-    public boolean isInside(Simulation sim, Location loc) {
+    public boolean isInside(Simulation sim, WorldLocation loc) {
         // we're too small for anything to hit us...
         return false;
     }
 
-    protected Location mLocation;
+    protected WorldLocation mLocation;
     protected double mHeading = 0.0;// 45.0 * (Math.PI / 180.0);
     protected double mVelocity = 1.0;
 
@@ -29,11 +29,11 @@ public abstract class Displayable3DAgent extends Agent {
         mSim = sim;
     }
 
-    public Location getLocation() {
+    public WorldLocation getLocation() {
         return mLocation;
     }
 
-    protected void setLocation(Location dst) throws LocationInsideObjectException {
+    protected void setLocation(WorldLocation dst) throws LocationInsideObjectException {
         if (mSim.isInside3DObject(dst))
             throw new LocationInsideObjectException (String.format("%s attempted to move inside an object", getTag()));
 
@@ -70,5 +70,5 @@ public abstract class Displayable3DAgent extends Agent {
      * @param direction
      * @return
      */
-    public abstract double distanceFrom(Location location, double direction);
+    public abstract double distanceFrom(WorldLocation location, double direction);
 }

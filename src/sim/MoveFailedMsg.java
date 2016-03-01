@@ -7,7 +7,7 @@ package sim;
  */
 public class MoveFailedMsg extends Message {
 
-    public MoveFailedMsg(Sensor sensor, Location dst) {
+    public MoveFailedMsg(Sensor sensor, WorldLocation dst) {
         super(sensor, dst);
     }
 }
