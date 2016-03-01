@@ -77,7 +77,7 @@ public class Sensor extends Displayable3DAgent {
         Integer[] loc = new Integer[2];
         getPixelLocation (loc);
 
-        showLidarData(g2, true);
+        showLidarData(g2, false);
 
         // leave a trail behind us
         {
@@ -172,21 +172,16 @@ public class Sensor extends Displayable3DAgent {
 
     /**
      * @param r
-     * @return number of scans that are in this rectangle
+     * @return number of scans that were taken in this rectangle
      * note Rectangles are always screen coords not world
      */
     public int sample(Rectangle r) {
         int count = 0;
-        // pick 10 random points in the rect
-        for (int i = 0; i < 10; ++i) {
-            Point pt = new Point(r.x + mRandom.nextInt(r.width), r.y + mRandom.nextInt(r.height));
-            for (LidarData s : mLidar) {
-                if (s.mShape.contains(pt))
-                    count++;
-            }
-        }
+        for (LidarData s : mLidar)
+            if (r.contains(mSim.world2PixelX(s.mLocation.getX()), mSim.world2PixelX(s.mLocation.getY())))
+                count++;
+
         return count;
     }
-
 
 }
